@@ -1,0 +1,60 @@
+version: "3.8"
+
+services:
+
+  mongodb:
+    image: bharathkumarots/mongodb:v1
+    container_name: mongodb
+    networks:
+      - roboshop
+
+  redis:
+    image: bharathkumarots/redis:v1
+    container_name: redis
+    networks:
+      - roboshop
+
+  catalogue:
+    image: bharathkumarots/catalogue:v1
+    container_name: catalogue
+    depends_on:
+      - mongodb
+    networks:
+      - roboshop
+
+  user:
+    image: bharathkumarots/user:v1
+    container_name: user
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - roboshop
+
+  cart:
+    image: bharathkumarots/cart:v1
+    container_name: cart
+    depends_on:
+      - catalogue
+      - redis
+    networks:
+      - roboshop
+
+  mysql:
+    image: bharathkumarots/mysql:v1
+    container_name: mysql
+    networks:
+      - roboshop
+
+  shipping:
+    image: bharathkumarots/shipping:v1
+    container_name: shipping
+    depends_on:
+      - mysql
+      - cart
+    networks:
+      - roboshop
+
+networks:
+  roboshop:
+    driver: bridge
