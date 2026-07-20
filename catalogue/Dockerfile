@@ -1,4 +1,4 @@
-FROM node:20-alpine3.12
+FROM node:20-alpine3.22
 
 # Create a non-root user and group
 RUN addgroup -S roboshop && adduser -S roboshop -G roboshop
