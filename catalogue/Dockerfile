@@ -1,29 +1,40 @@
-FROM node:20-alpine3.22
+# ----------------------------
+# Stage 1 - Build
+# ----------------------------
+FROM node:20-alpine3.22 AS builder
 
-# Create a non-root user and group
-RUN addgroup -S roboshop && adduser -S roboshop -G roboshop
-
-# Set working directory
 WORKDIR /opt/server
 
 # Copy package files
 COPY package*.json ./
 
-# Change ownership
-RUN chown -R roboshop:roboshop /opt/server
-
-# Switch to non-root user
-USER roboshop
-
-# Install dependencies
-RUN npm install
+# Install production dependencies
+RUN npm install --omit=dev
 
 # Copy application source
-COPY --chown=roboshop:roboshop . .
+COPY . .
+
+# ----------------------------
+# Stage 2 - Runtime
+# ----------------------------
+FROM node:20-alpine3.22
+
+# Create non-root user
+RUN addgroup -S roboshop && \
+    adduser -S roboshop -G roboshop
+
+# Set working directory
+WORKDIR /opt/server
+
+# Copy application from builder
+COPY --from=builder --chown=roboshop:roboshop /opt/server /opt/server
 
 # Environment variables
 ENV MONGO=true \
     MONGO_URL=mongodb://mongodb:27017/catalogue
+
+# Run as non-root user
+USER roboshop
 
 # Start application
 CMD ["node", "server.js"]
